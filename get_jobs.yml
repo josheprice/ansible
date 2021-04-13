@@ -1,0 +1,126 @@
+- hosts: localhost
+  collections:
+    - netapp.ontap
+  # connection: local
+  gather_facts: false
+  name: Volume Action
+
+  vars:
+    hostname: "{{ inventory_vars.all.hosts.CERNINFSVNALS501.cluster_name }}"
+    username: "{{ inventory_vars.all.hosts.CERNINFSVNALS501.cluster_user }}"
+    password: "{{ inventory_vars.all.hosts.CERNINFSVNALS501.cluster_pass }}"
+    vserver: mir_SOFTSERVE1 #"{{ vserver }}"
+    #aggr: aggr2_node01_10T_SATA 
+    vol_name: ansible_test6 #"{{ vol_name }}"
+    size: 10 #"{{ vol_size }}"
+    disk_type: hdd #"{{ disk_type }}"
+    share_path: #"{{ share_path }}"
+    share_name: #"{{ share_name }}"
+    sec_cluster: "{{ sec_cluster }}"
+    
+  
+    
+    
+  tasks:
+  - name: gather cluster vars
+    include_vars:
+      dir: /home/ansible/inventory
+      files_matching: '^(.*).yml$'
+      name: inventory_vars
+
+ 
+  - debug:
+      msg: "{{ inventory_vars.all.hosts.CERNINFSVNALS501.ansible_user }}"
+#
+
+
+ 
+  - name: Get Snapshot and node type  
+    na_ontap_info: 
+      state: info 
+      hostname: "{{ hostname }}" 
+      username: "{{ username }}" 
+      password: "{{ password }}" 
+      https: true 
+      validate_certs: false
+      gather_subset: 
+        - "snapshot_policy_info"
+        - "sysconfig_info"
+    register: ontap_info
+  - set_fact:
+      snap_pol: "{{snap_pol|default([]) + [ ontap_info.ontap_info.snapshot_policy_info[item].policy ]  }}"
+    with_items: "{{ ontap_info.ontap_info.snapshot_policy_info }}"
+    when: ontap_info.ontap_info.snapshot_policy_info[item].policy is search("Daily-.*") 
+  - set_fact:
+      snap_pol: "{{ snap_pol |random }}"    
+  - debug:
+      msg: "{{ snap_pol }}" 
+  - set_fact:
+      node_type: "{{ ontap_info.ontap_info.sysconfig_info[item].prod_type }}" 
+    with_items: "{{ ontap_info.ontap_info.sysconfig_info }}"
+  - debug:
+      msg: "{{ node_type }}"   
+  #    "{{ (aggr_facts |sort(attribute='used_pct'))[0]['aggr_name'] }}"
+#  - set_fact:
+#      snap_pol: "{{snap_pol|default([]) + [ ontap_info.ontap_info.snapshot_policy_info[item].policy ]  }}"
+#    with_items: "{{ ontap_info.ontap_info.snapshot_policy_info }}"
+#    when: ontap_info.ontap_info.snapshot_policy_info[item].policy is search("Daily-.*") 
+#  - set_fact:
+#      snap_pol: "{{ snap_pol |random }}"    
+#  - debug:
+#      msg: "{{ snap_pol }}" 
+#  - debug:
+#      #msg: "{{ontap_info.ontap_info.job_schedule_cron_info['M15-45:CERNINFSVNALS501'].job_schedule_name}}"  
+#      msg: "{{ job_sched }}"
+
+
+#  - name: Get SVM aggr list
+#    na_ontap_gather_facts: 
+#      state: info 
+#      hostname: "{{ hostname }}" 
+#      username: "{{ username }}" 
+#      password: "{{ password }}" 
+#      https: true 
+#      validate_certs: false
+#  - debug:
+#      msg: "{{ ontap_facts.vserver_info[vserver].aggr_list.aggr_name }}"
+#  - set_fact:
+#      aggr_facts: "{{ aggr_facts|default([]) + [ {'aggr_name': ontap_facts.aggregate_info[item].aggregate_name, 'used_pct': ontap_facts.aggregate_info[item].aggr_space_attributes.physical_used_percent} ] }}"
+#    with_items: "{{ ontap_facts.aggregate_info }}"
+#    when:
+#    - "{{ ontap_facts.aggregate_info[item].aggr_space_attributes.physical_used_percent }} < 70"
+#    - not item.startswith("aggr0")
+#    - ontap_facts.aggregate_info[item].aggr_raid_attributes.aggregate_type == disk_type
+#    - ontap_facts.aggregate_info[item].aggregate_name in ontap_facts.vserver_info[vserver].aggr_list.aggr_name 
+#   #add more intelligent stuff here
+#    ignore_errors: yes
+#  - set_fact:
+#      aggr_select: "{{ (aggr_facts |sort(attribute='used_pct'))[0]['aggr_name'] }}"
+#  - debug:
+#      msg: "{{ aggr_select }}"
+      
+      
+      
+
+    
+  #- debug:
+  #    msg: "{{ storage_snapshot_policies }}"
+# - set_fact:
+#     aggr_facts: "{{ aggr_facts|default([]) + [ {'aggr_name': ontap_facts.aggregate_info[item].aggregate_name, 'used_pct': ontap_facts.aggregate_info[item].aggr_space_attributes.physical_used_percent} ] }}"
+#   with_items: "{{ ontap_facts.aggregate_info }}"
+#   when:
+#   - "{{ ontap_facts.aggregate_info[item].aggr_space_attributes.physical_used_percent }} < 70"
+#   - not item.startswith("aggr0")
+#   - ontap_facts.aggregate_info[item].aggr_raid_attributes.aggregate_type == disk_type
+#   - ontap_facts.aggregate_info[item].aggregate_name in ontap_facts.vserver_info[vserver].aggr_list.aggr_name 
+#  #add more intelligent stuff here
+#   ignore_errors: yes
+# - set_fact:
+#     aggr_select: "{{ (aggr_facts |sort(attribute='used_pct'))[0]['aggr_name'] }}"
+# - debug:
+#     msg: "{{ aggr_select }}"      
+#      
+# Daily-*     
+      
+      
+      
