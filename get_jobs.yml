@@ -6,9 +6,9 @@
   name: Volume Action
 
   vars:
-    hostname: "{{ inventory_vars.all.hosts.CERNINFSVNALS501.cluster_name }}"
-    username: "{{ inventory_vars.all.hosts.CERNINFSVNALS501.cluster_user }}"
-    password: "{{ inventory_vars.all.hosts.CERNINFSVNALS501.cluster_pass }}"
+    hostname: "{{ cluster_name }}"
+    username: "{{ netapp_username }}"
+    password: "{{ netapp_password }}"
     vserver: mir_SOFTSERVE1 #"{{ vserver }}"
     #aggr: aggr2_node01_10T_SATA 
     vol_name: ansible_test6 #"{{ vol_name }}"
@@ -22,15 +22,15 @@
     
     
   tasks:
-  - name: gather cluster vars
-    include_vars:
-      dir: /home/ansible/inventory
-      files_matching: '^(.*).yml$'
-      name: inventory_vars
+#  - name: gather cluster vars
+#    include_vars:
+#      dir: /home/ansible/inventory
+#      files_matching: '^(.*).yml$'
+#      name: inventory_vars
 
  
-  - debug:
-      msg: "{{ inventory_vars.all.hosts.CERNINFSVNALS501.ansible_user }}"
+#  - debug:
+#      msg: "{{ inventory_vars.all.hosts.CERNINFSVNALS501.ansible_user }}"
 #
 
 
