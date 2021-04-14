@@ -157,7 +157,7 @@
   - name: Get SnapMirror job schedule 
     na_ontap_info: 
       state: info 
-      hostname: "{{ hostname }}" 
+      hostname: "{{ sec_cluster }}" 
       username: "{{ username }}" 
       password: "{{ password }}" 
       https: true 
