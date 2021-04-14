@@ -43,7 +43,7 @@
       hostname: "{{ hostname }}" 
       username: "{{ username }}" 
       password: "{{ password }}" 
-      https: true 
+      https: false 
       validate_certs: false
       use_rest: never
       gather_subset: 
