@@ -151,6 +151,18 @@
       command: ['volume', 'modify', "{{ vol_name }}", '-vserver', "{{ vserver }}", '-space-nearly-full-threshold-percent', '90', '-space-full-threshold-percent', '95' ]
       https: true
       validate_certs: false
+       
+  - name: Enable Volume efficiency
+    na_ontap_volume_efficiency:
+      state: present
+      vserver: "{{ vserver }}"
+      path: "/{{ vol_name }}"
+      hostname: "{{ hostname }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      https: true
+      validate_certs: false
+      
 
 #Create DR side
 
@@ -190,7 +202,7 @@
       validate_certs: false
       gather_subset: "aggregate_info"
   - set_fact:
-      aggr_facts: "{{ aggr_facts|default([]) + [ {'aggr_name': ontap_facts.aggregate_info[item].aggregate_name, 'used_pct': ontap_facts.aggregate_info[item].aggr_space_attributes.physical_used_percent} ] }}"
+      sec_aggr_facts: "{{ sec_aggr_facts|default([]) + [ {'aggr_name': ontap_facts.aggregate_info[item].aggregate_name, 'used_pct': ontap_facts.aggregate_info[item].aggr_space_attributes.physical_used_percent} ] }}"
     with_items: "{{ ontap_facts.aggregate_info }}"
     when:
     - "{{ ontap_facts.aggregate_info[item].aggr_space_attributes.physical_used_percent }} < 70"
@@ -200,9 +212,9 @@
     #add more intelligent stuff here maybe
     ignore_errors: yes
   - set_fact:
-      aggr_select: "{{ (aggr_facts |sort(attribute='used_pct'))[0]['aggr_name'] }}"
+      sec_aggr_select: "{{ (sec_aggr_facts |sort(attribute='used_pct'))[0]['aggr_name'] }}"
   - debug:
-      msg: "{{ aggr_select }}"
+      msg: "{{ sec_aggr_select }}"
 
 
   - name: Volume Create
@@ -211,7 +223,7 @@
       state: present
       name: 'mir_{{ vol_name }}'
       vserver: 'mir_{{ vserver }}'
-      aggregate_name: '{{ aggr_select }}'
+      aggregate_name: '{{ sec_aggr_select }}'
       size: "{{ size }}"
       size_unit: gb
       encrypt: no
