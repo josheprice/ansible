@@ -188,7 +188,7 @@
     when:
     - "{{ ontap_facts.aggregate_info[item].aggr_space_attributes.physical_used_percent }} < 70"
     - not item.startswith("aggr0")
-    - ontap_facts.aggregate_info[item].aggr_raid_attributes.aggregate_type == disk_type
+    - ontap_facts.aggregate_info[item].aggr_raid_attributes.aggregate_type == "hdd"
     #- ontap_facts.aggregate_info[item].aggregate_name in ontap_facts.vserver_info[vserver].aggr_list.aggr_name 
     #add more intelligent stuff here maybe
     ignore_errors: yes
