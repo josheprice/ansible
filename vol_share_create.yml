@@ -156,7 +156,7 @@
     na_ontap_volume_efficiency:
       state: present
       vserver: "{{ vserver }}"
-      path: "/{{ vol_name }}"
+      path: "/vol/{{ vol_name }}"
       hostname: "{{ hostname }}"
       username: "{{ username }}"
       password: "{{ password }}"
