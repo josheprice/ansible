@@ -17,6 +17,8 @@
     share_path: #"{{ share_path }}"
     share_name: #"{{ share_name }}"
     sec_cluster: "{{ sec_cluster }}"
+    ansible_python_interpreter: "/usr/bin/python3"
+
     
   
     
