@@ -45,6 +45,7 @@
       password: "{{ password }}" 
       https: true 
       validate_certs: false
+      use_rest: never
       gather_subset: 
         - "snapshot_policy_info"
         - "sysconfig_info"
