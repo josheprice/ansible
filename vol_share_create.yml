@@ -6,15 +6,15 @@
   name: Volume Action
 
   vars:
-    hostname: "{{ inventory_vars.all.hosts.CERNINFSVNALS501.cluster_name }}"
-    username: "{{ inventory_vars.all.hosts.CERNINFSVNALS501.cluster_user }}"
-    password: "{{ inventory_vars.all.hosts.CERNINFSVNALS501.cluster_pass }}"
-    vserver: mir_SOFTSERVE1 #"{{ vserver }}"
+    hostname: "{{ cluster_name }}"
+    username: "{{ netapp_username }}"
+    password: "{{ netapp_password }}"
+    vserver: "{{ vserver }}"
     sec_vserver: 'mir_{{ vserver }}'
     #aggr: aggr2_node01_10T_SATA 
-    vol_name: ansible_test6 #"{{ vol_name }}"
-    size: 10 #"{{ vol_size }}"
-    disk_type: hdd #"{{ disk_type }}"
+    vol_name: "{{ vol_name }}"
+    size: "{{ vol_size }}"
+    disk_type: "{{ disk_type }}"
     share_path: #"{{ share_path }}"
     share_name: #"{{ share_name }}"
     sec_cluster: "{{ sec_cluster }}"
@@ -26,10 +26,7 @@
       files_matching: '^(.*).yml$'
       name: inventory_vars
 
-  - debug:
-      msg: "{{ inventory_vars.all.hosts.CERNINFSVNALS501.ansible_user }}"
-
-  - name: Gather facts 
+   - name: Gather facts 
     na_ontap_gather_facts: 
       state: info 
       hostname: "{{ hostname }}" 
