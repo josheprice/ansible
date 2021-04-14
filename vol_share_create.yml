@@ -142,18 +142,6 @@
       https: true
       validate_certs: false
 
-  - name: Modify volume autosize
-    na_ontap_volume_autosize:
-      hostname: "{{ hostname }}"
-      username: "{{ username }}"
-      password: "{{ password }}"
-      volume: "{{ vol_name }}"
-      mode: grow
-      grow_threshold_percent: "90"
-      vserver: "{{ vserver }}"
-      use_rest: never
-      https: true
-      validate_certs: false
       
   - name: run ontap cli command
     na_ontap_command:
@@ -254,6 +242,20 @@
       hostname: "{{ sec_cluster }}"
       username: "{{ username }}"
       password: "{{ password }}"
+      https: true
+      validate_certs: false
+      
+      
+   - name: Modify volume autosize
+    na_ontap_volume_autosize:
+      hostname: "{{ hostname }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      volume: "{{ vol_name }}"
+      mode: grow
+      grow_threshold_percent: "90"
+      vserver: "{{ vserver }}"
+      use_rest: never
       https: true
       validate_certs: false
       
