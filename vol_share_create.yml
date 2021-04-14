@@ -263,7 +263,7 @@
       password: "{{ password }}"
       volume: "mir_{{ vol_name }}"
       mode: grow
-      grow_threshold_percent: 90
+      grow_threshold_percent: "90"
       vserver: "mir_{{ vserver }}"       
       https: true
       validate_certs: false
