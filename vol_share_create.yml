@@ -181,15 +181,16 @@
       password: "{{ password }}" 
       https: true 
       validate_certs: false
+      gather_subset: "aggregate_info"
   - set_fact:
       aggr_facts: "{{ aggr_facts|default([]) + [ {'aggr_name': ontap_facts.aggregate_info[item].aggregate_name, 'used_pct': ontap_facts.aggregate_info[item].aggr_space_attributes.physical_used_percent} ] }}"
     with_items: "{{ ontap_facts.aggregate_info }}"
     when:
     - "{{ ontap_facts.aggregate_info[item].aggr_space_attributes.physical_used_percent }} < 70"
     - not item.startswith("aggr0")
-    - ontap_facts.aggregate_info[item].aggr_raid_attributes.aggregate_type == hdd
-    #- ontap_facts.aggregate_info[item].aggregate_name in ontap_facts.vserver_info[sec_vserver].aggr_list.aggr_name 
-    #add more intelligent stuff here
+    - ontap_facts.aggregate_info[item].aggr_raid_attributes.aggregate_type == disk_type
+    #- ontap_facts.aggregate_info[item].aggregate_name in ontap_facts.vserver_info[vserver].aggr_list.aggr_name 
+    #add more intelligent stuff here maybe
     ignore_errors: yes
   - set_fact:
       aggr_select: "{{ (aggr_facts |sort(attribute='used_pct'))[0]['aggr_name'] }}"
