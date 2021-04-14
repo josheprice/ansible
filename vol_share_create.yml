@@ -20,11 +20,11 @@
     sec_cluster: "{{ sec_cluster }}"
         
   tasks:
-  - name: gather cluster vars
-    include_vars:
-      dir: /home/ansible/inventory
-      files_matching: '^(.*).yml$'
-      name: inventory_vars
+#  - name: gather cluster vars
+#    include_vars:
+#      dir: /home/ansible/inventory
+#      files_matching: '^(.*).yml$'
+#      name: inventory_vars
 
    - name: Gather facts 
     na_ontap_gather_facts: 
