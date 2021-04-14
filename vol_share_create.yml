@@ -26,11 +26,11 @@
 #      files_matching: '^(.*).yml$'
 #      name: inventory_vars
 
-   - name: Gather facts 
+  - name: Gather facts 
     na_ontap_gather_facts: 
-      state: info 
+      state: info
       hostname: "{{ hostname }}" 
-      username: "{{ username }}" 
+      username: {{ username }}" 
       password: "{{ password }}" 
       https: true 
       validate_certs: false
