@@ -246,8 +246,8 @@
       validate_certs: false
       
       
-   - name: Modify volume autosize
-     na_ontap_volume_autosize:
+  - name: Modify volume autosize
+    na_ontap_volume_autosize:
       hostname: "{{ hostname }}"
       username: "{{ username }}"
       password: "{{ password }}"
