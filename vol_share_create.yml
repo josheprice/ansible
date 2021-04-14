@@ -91,7 +91,7 @@
       policy: default
       percent_snapshot_space: 0
       language: en_us
-      snapshot_policy :
+      snapshot_policy : "{{ snap_pol }}"
       type: RW
       volume_security_style: ntfs
       junction_path: '/{{ vol_name }}'
@@ -101,8 +101,6 @@
       # use_rest: Never
       https: true
       validate_certs: false
-
-#don't forget to set efficiency and snapshots 
 
   - name: Create CIFS share
     na_ontap_cifs:
@@ -144,6 +142,23 @@
       https: true
       validate_certs: false
 
+  - name: Modify volume autosize
+    na_ontap_volume_autosize:
+      hostname: "{{ hostname }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      volume: "{{ vol_name }}"
+      mode: grow
+      grow_threshold_percent: 90
+      vserver: "{{ vserver }}" 
+      
+  - name: run ontap cli command
+    na_ontap_command:
+      hostname: "{{ hostname }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      command: ['volume', 'modify', "{{ vol_name }}", '-vserver', "{{ vserver }}", '-space-nearly-full-threshold-percent', '90', '-space-full-threshold-percent', '95' ]
+      
 
 #Create DR side
 
@@ -238,8 +253,23 @@
       https: true
       validate_certs: false
       
+  - name: Modify volume autosize
+    na_ontap_volume_autosize:
+      hostname: "{{ sec_cluster }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      volume: "mir_{{ vol_name }}"
+      mode: grow
+      grow_threshold_percent: 90
+      vserver: "mir_{{ vserver }}"       
       
-      
+  - name: run ontap cli command
+    na_ontap_command:
+      hostname: "{{ sec_cluster }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      command: ['volume', 'modify', "mir_{{ vol_name }}", '-vserver', "mir_{{ vserver }}", '-space-nearly-full-threshold-percent', '90', '-space-full-threshold-percent', '95' ]
+    
       
       
 ###
