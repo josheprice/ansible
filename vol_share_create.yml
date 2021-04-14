@@ -148,11 +148,11 @@
 #Create DR side
 
 
-  - name: Unset variables
-    set_fact: 
-      ontap_facts:
-      aggr_facts:
-      aggr_select:
+#  - name: Unset variables
+#    set_fact: 
+#      ontap_facts:
+#      aggr_facts:
+#      aggr_select:
       
   - name: Get SnapMirror job schedule 
     na_ontap_info: 
