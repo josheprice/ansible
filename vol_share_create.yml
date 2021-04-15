@@ -232,7 +232,6 @@
       language: en_us
       type: DP
       volume_security_style: ntfs
-      junction_path: '/mir_{{ vol_name }}'
       hostname: '{{ sec_cluster }}'
       username: '{{ username }}'
       password: '{{ password }}'
