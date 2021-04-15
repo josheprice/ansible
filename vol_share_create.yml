@@ -14,7 +14,7 @@
     #aggr: aggr2_node01_10T_SATA 
     vol_name: "{{ vol_name }}"
     size: "{{ vol_size }}"
-    disk_type: "{{ disk_type }}"
+    #disk_type: "{{ disk_type }}"
     share_path: #"{{ share_path }}"
     share_name: #"{{ share_name }}"
     sec_cluster: "{{ sec_cluster }}"
@@ -26,29 +26,6 @@
 #      files_matching: '^(.*).yml$'
 #      name: inventory_vars
 
-  - name: Gather facts 
-    na_ontap_gather_facts: 
-      state: info
-      hostname: "{{ hostname }}" 
-      username: "{{ username }}" 
-      password: "{{ password }}" 
-      https: true 
-      validate_certs: false
-  - set_fact:
-      aggr_facts: "{{ aggr_facts|default([]) + [ {'aggr_name': ontap_facts.aggregate_info[item].aggregate_name, 'used_pct': ontap_facts.aggregate_info[item].aggr_space_attributes.physical_used_percent} ] }}"
-    with_items: "{{ ontap_facts.aggregate_info }}"
-    when:
-    - "{{ ontap_facts.aggregate_info[item].aggr_space_attributes.physical_used_percent }} < 70"
-    - not item.startswith("aggr0")
-    - ontap_facts.aggregate_info[item].aggr_raid_attributes.aggregate_type == disk_type
-    #- ontap_facts.aggregate_info[item].aggregate_name in ontap_facts.vserver_info[vserver].aggr_list.aggr_name 
-    #add more intelligent stuff here maybe
-    ignore_errors: yes
-  - set_fact:
-      aggr_select: "{{ (aggr_facts |sort(attribute='used_pct'))[0]['aggr_name'] }}"
-  - debug:
-      msg: "{{ aggr_select }}"
- 
   - name: Get Snapshot and node type  
     na_ontap_info: 
       state: info 
@@ -73,7 +50,41 @@
       node_type: "{{ ontap_info.ontap_info.sysconfig_info[item].prod_type }}" 
     with_items: "{{ ontap_info.ontap_info.sysconfig_info }}"
   - debug:
-      msg: "{{ node_type }}"     
+      msg: "{{ node_type }}"  
+      
+
+  - name: set disk type
+    set_fact:
+      disk_type: "{{ 'ssd' if node_type == 'AFF' else 'hdd,vmdisk' }}" 
+    
+ 
+    
+    
+      
+  - name: Gather facts 
+    na_ontap_gather_facts: 
+      state: info
+      hostname: "{{ hostname }}" 
+      username: "{{ username }}" 
+      password: "{{ password }}" 
+      https: true 
+      validate_certs: false
+  - set_fact:
+      aggr_facts: "{{ aggr_facts|default([]) + [ {'aggr_name': ontap_facts.aggregate_info[item].aggregate_name, 'used_pct': ontap_facts.aggregate_info[item].aggr_space_attributes.physical_used_percent} ] }}"
+    with_items: "{{ ontap_facts.aggregate_info }}"
+    when:
+    - "{{ ontap_facts.aggregate_info[item].aggr_space_attributes.physical_used_percent }} < 70"
+    - not item.startswith("aggr0")
+    - ontap_facts.aggregate_info[item].aggr_raid_attributes.aggregate_type in disk_type
+    #- ontap_facts.aggregate_info[item].aggregate_name in ontap_facts.vserver_info[vserver].aggr_list.aggr_name 
+    #add more intelligent stuff here maybe
+    ignore_errors: yes
+  - set_fact:
+      aggr_select: "{{ (aggr_facts |sort(attribute='used_pct'))[0]['aggr_name'] }}"
+  - debug:
+      msg: "{{ aggr_select }}"
+ 
+   
 
 
       
