@@ -55,7 +55,7 @@
 
   - name: set disk type
     set_fact:
-      disk_type: "{{ 'ssd' if node_type == 'AFF' else 'hdd,vmdisk' }}" 
+      disk_type: "{{ 'ssd' if node_type == 'AFF' else ['hdd','vmdisk'] }}" 
     
  
     
