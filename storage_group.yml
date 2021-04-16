@@ -1,0 +1,188 @@
+
+
+#get unisphere host for array from /host/facts/
+
+- hosts: all
+ # connection: local
+  collections:
+    - dellemc.powermax
+  vars:
+    unispherehost: "{{ host_facts.unispherehost }}"
+    # universion: hostvars[ansible_hostname].universion
+    universion: "{{uni_version}}"
+    #serial_no: "{{ serial_no }}"
+    verifycert: False
+     #uniuser: "{{ hostvars[ansible_host].uniuser }}"
+     #unipassword: "{{ hostvars[ansible_host].unipassword }}"
+    user: "{{uniuser}}"
+    password: "{{unipassword}}"
+    serial_no:   "000197601430"
+    #sg_name: 'ansible_test_SG'
+    # threshold_cap: enter the size in GB
+    ansible_python_interpreter: "/usr/bin/python3"
+    client_mnem: "TESTMO"
+    host_name_1: "TESTHOST"
+    host_1_wwns:
+    host_name_2:
+    host_name_3:
+    host_name_4:
+    host_name_5:
+    host_name_6:
+    host_name_7:
+    host_name_8:
+    dg_lvm: "LVM"
+    iteration_1_vol_count: 1
+    iteration_1_vol_size: 10
+    sg_name: "{{ client_mnem + '_' + host_name_1 + '_' + dg_lvm + '_SG' }}"
+    port_group_odd: "LS1TESTD1_PG"
+    port_group_even:
+    
+  tasks:
+  - name: gather cluster vars
+    include_vars:
+      dir: /opt/ansible_emc/host_facts
+      #files_matching: '^(.*).yml$'
+      files_matching: "{{ serial_no }}"
+      name: host_facts
+      
+  - debug:
+      msg: "{{ host_facts }}"
+  - debug:
+      msg: "{{ unispherehost }}"  
+
+  - name: Create Storage Group
+    dellemc_powermax_storagegroup:
+      unispherehost: "{{unispherehost}}"
+      universion: "{{universion}}"
+      verifycert: "{{verifycert}}"
+      user: "{{user}}"
+      password: "{{password}}"
+      serial_no: "{{serial_no}}"
+      sg_name: "{{ client_mnem + '_' + host_name_1 + '_' + dg_lvm + '_SG' }}"
+      service_level: "Diamond"
+      srp: "SRP_1"
+      compression: True
+      state: "present"
+#      volumes:
+#      - vol_name: "{{ client_mnem + '_' + host_name + '_' + dg_lvm + '_SG' }}"
+#        size: 10
+#        cap_unit: "GB"
+#      - vol_name: "{{ client_mnem + '_' + host_name + '_' + dg_lvm + '_SG' }}"
+#        size: 12
+#        cap_unit: "GB"
+#      vol_state: "present-in-group"
+
+
+#  - name: Create volume
+#    dellemc_powermax_volume:
+#      unispherehost: "{{unispherehost}}"
+#      universion: "{{universion}}"
+#      verifycert: "{{verifycert}}"
+#      user: "{{user}}"
+#      password: "{{password}}"
+#      serial_no: "{{serial_no}}"
+#     # vol_name: "{{ client_mnem + '_' + host_name + '_' + dg_lvm + '_SG' }}"
+#      sg_name: "{{ client_mnem + '_' + host_name + '_' + dg_lvm + '_SG' }}"
+#      size: 10
+#      cap_unit: "GB"
+#      state: 'present'    
+
+
+
+# use rest api I guess because these modules suck
+  - name: Create new volumes with RestAPI
+    uri:
+      url: "https://{{ unispherehost }}:8443/univmax/restapi/{{ universion }}/sloprovisioning/symmetrix/{{ serial_no }}/storagegroup/{{ sg_name }}"
+      validate_certs: false
+      user: "{{ user }}"
+      password: "{{ password }}"
+      timeout: 200
+      headers:
+        Content-Type: "application/json"
+      method: PUT
+      body_format: json
+      body: {"editStorageGroupActionParam": {
+          "expandStorageGroupParam": {
+              "addVolumeParam": {
+                  "emulation": "FBA",
+                  "create_new_volumes": True,
+                  "volumeAttributes": [{
+                      "num_of_vols": "{{ iteration_1_vol_count }}",
+                      "volumeIdentifier": {
+                          "identifier_name": ,
+                          "volumeIdentifierChoice": "identifier_name_plus_volume_id"},
+                      "volume_size": "{{ iteration_1_vol_size }}",
+                      "capacityUnit": "GB"}],
+              }}}}
+      status_code:
+        - 200
+        - 201
+    register: response
+    changed_when: true
+    ignore_errors: true
+
+
+  - name: Create host with host_flags
+    dellemc_powermax_host:
+      unispherehost: "{{unispherehost}}"
+      universion: "{{universion}}"
+      verifycert: false
+      user: "{{user}}"
+      password: "{{password}}"
+      serial_no: "{{serial_no}}"
+      host_name: "{{ host_name_1 + '_H'}}"
+      initiators:
+      - 10000090123abc80
+      - 10000090123abc81
+      host_flags:
+          consistent_lun: true
+      state: 'present'
+      initiator_state: 'present-in-host'
+
+  - name: Create host group with 'default' host_type
+    dellemc_powermax_hostgroup:
+      unispherehost: "{{unispherehost}}"
+      universion: "{{universion}}"
+      verifycert: false
+      user: "{{user}}"
+      password: "{{password}}"
+      serial_no: "{{serial_no}}"
+      hostgroup_name: "{{ host_name_1 + '_HG'}}"
+      #host_type: "default"
+      host_flags:
+          consistent_lun: true
+      hosts:
+      - "{{ host_name_1 + '_H'}}"
+      host_state: 'present-in-group'
+      state: 'present'
+
+
+
+
+#  need to do a loop for all host names maybe, like this: --maybe for volume iterations too
+#  - include_tasks: 2arrays_from_unisphere_loop.yml
+#    with_items: "{{array_list.Arrays}}"
+
+
+
+
+# need to figure out if port groups already exist, and how to get them into inventory/vars
+# inventory needs to include SE host by array name, domain/port group, credentials
+
+  - name: Create MV with hostgroup
+    dellemc_powermax_maskingview:
+      unispherehost: "{{unispherehost}}"
+      universion: "{{universion}}"
+      verifycert: false
+      user: "{{user}}"
+      password: "{{password}}"
+      serial_no: "{{serial_no}}"
+      mv_name: "{{ host_name_1 + '_ODD_MV'}}"
+      portgroup_name: "{{ port_group_odd }}"
+      hostgroup_name: "{{ host_name_1 + '_HG'}}"
+      sg_name: "{{ client_mnem + '_' + host_name_1 + '_' + dg_lvm + '_SG' }}"
+      state: "present"
+
+
+
+      
